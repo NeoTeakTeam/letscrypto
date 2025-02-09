@@ -72,6 +72,8 @@
             subtitle.Size = new Size(139, 17);
             subtitle.TabIndex = 1;
             subtitle.Text = "Let's encrypt together!";
+            subtitle.TextAlign = ContentAlignment.TopCenter;
+            subtitle.Click += subtitle_Click;
             // 
             // textTip
             // 

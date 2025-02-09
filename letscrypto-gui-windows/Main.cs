@@ -4,12 +4,19 @@ namespace letscrypto_gui_windows
 {
     public partial class Main : Form
     {
+        public string[] subtitleItems = {
+            "Let's encrypt together",
+            "Let's decrypt together",
+        };
+
         private Core coreInstance = new();
+        private int subtitleCount = 0;
 
 
         public Main()
         {
             InitializeComponent();
+            subtitle.Text = subtitleItems[subtitleCount];
         }
 
         private void randomOffset_Click(object sender, EventArgs e)
@@ -176,6 +183,19 @@ namespace letscrypto_gui_windows
             realKey = string.Join("", realKeyLists).Replace("\n", "");
 
             coreInstance.decrypt(utext.Text, realKey, offset);
+        }
+
+        private void subtitle_Click(object sender, EventArgs e)
+        {
+            subtitleCount += 1;
+
+            if (subtitleCount >= 10)
+            {
+                subtitleCount = 0;
+                subtitle.Text = "Are you just for fun?";
+            }
+            else
+                subtitle.Text = subtitleItems[subtitleCount % subtitleItems.Length];
         }
     }
 }
