@@ -1,14 +1,13 @@
 using core;
-using Microsoft.VisualBasic;
 
 namespace letscrypto_gui_windows
 {
-    public partial class Form1 : Form
+    public partial class Main : Form
     {
         private Core coreInstance = new();
 
 
-        public Form1()
+        public Main()
         {
             InitializeComponent();
         }
@@ -20,10 +19,8 @@ namespace letscrypto_gui_windows
 
         private void generateKey_Click(object sender, EventArgs e)
         {
-            string input = Interaction.InputBox("要生成几次?", "重复次数", "20");
-
             // 验证输入是否为整数
-            if (int.TryParse(input, out int count))
+            if (int.TryParse(generateBox.Text, out int count))
             {
                 ukey.Text = coreInstance.generateKey(count);
             }
@@ -42,7 +39,7 @@ namespace letscrypto_gui_windows
             if (file.ShowDialog() == DialogResult.OK)
             {
                 string selectedFilePath = file.FileName;
-                File.WriteAllText(selectedFilePath, ukey.Text);
+                File.WriteAllText(selectedFilePath, coreInstance.formatKey(ukey.Text));
             }
         }
 
@@ -63,7 +60,7 @@ namespace letscrypto_gui_windows
         private void keyLoadFile_Click(object sender, EventArgs e)
         {
             OpenFileDialog file = new();
-            file.Filter = "所有文件(*.*)|*.*";
+            file.Filter = "密钥文件(*.key)|*.key|所有文件(*.*)|*.*";
             file.FilterIndex = 1;
             file.Multiselect = false;
 
