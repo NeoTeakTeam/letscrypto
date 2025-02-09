@@ -18,8 +18,11 @@ namespace core
 
                 int randomNumber = new Random().Next(0, 1000);
 
-                System.Security.Cryptography.SHA256 sha256 = System.Security.Cryptography.SHA256.Create();
-                byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(dateTime + currentProcess + randomNumber + i));
+                System.Security.Cryptography.SHA256 sha256 =
+                    System.Security.Cryptography.SHA256.Create();
+                byte[] hashBytes = sha256.ComputeHash(
+                    Encoding.UTF8.GetBytes(dateTime + currentProcess + randomNumber + i)
+                );
 
                 res += System.Convert.ToBase64String(hashBytes);
             }
