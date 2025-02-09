@@ -10,4 +10,4 @@ string key = coreInstance.generateKey();
 int offset = coreInstance.randomOffset();
 
 Console.WriteLine(coreInstance.encrypt("This is a text", key, offset));
-Console.WriteLine(coreInstance.encrypt("This is a text", key, offset));
+Console.WriteLine(coreInstance.decrypt(coreInstance.encrypt("This is a text", key, offset), key, offset));

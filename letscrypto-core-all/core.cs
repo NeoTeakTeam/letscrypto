@@ -46,5 +46,19 @@ namespace core
 
             return Convert.ToBase64String(resultBytes);
         }
+
+        public string decrypt(string text, string key, int offset)
+        {
+            byte[] textBytes = Convert.FromBase64String(text);
+            byte[] keyBytes = Encoding.UTF8.GetBytes(key);
+            byte[] resultBytes = new byte[textBytes.Length];
+
+            for (int i = 0; i < textBytes.Length; i++)
+            {
+                int keyIndex = (i + offset) % keyBytes.Length;
+                resultBytes[i] = (byte)(textBytes[i] ^ keyBytes[keyIndex]);
+            }
+            return Encoding.UTF8.GetString(resultBytes);
+        }
     }
 }
