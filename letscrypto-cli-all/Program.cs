@@ -1,5 +1,5 @@
-﻿using System.CommandLine;
-using core;
+﻿using core;
+using System.CommandLine;
 
 var coreInstance = new Core();
 
@@ -14,12 +14,44 @@ void generateKey(int count, string save)
     }
     else
     {
-        System.IO.File.WriteAllText(save, formatKey);
+        File.WriteAllText(save, formatKey);
     }
 }
 
-void encryptText(string text, string key, string offset, string save)
+void encrypt(string text, string file, string key, string offset, string save)
 {
+    var context = "";
+
+    if (text != "__Letscrypto_null__")
+    {
+        if (file == "__Letscrypto_null__")
+        {
+            context = text;
+        }
+        else
+        {
+            Console.WriteLine("Please provide a text or a file to encrypt");
+            return;
+        }
+    }
+    else
+    {
+        if (file != "__Letscrypto_null__")
+        {
+            if (!File.Exists(file))
+            {
+                Console.WriteLine("The file does not exist");
+                return;
+            }
+            context = File.ReadAllText(file);
+        }
+        else
+        {
+            Console.WriteLine("Please provide a text or a file to encrypt");
+            return;
+        }
+    }
+
     var realOffset = 0;
     if (offset == "__Letscrypto_random__")
     {
@@ -43,51 +75,111 @@ void encryptText(string text, string key, string offset, string save)
     }
     else
     {
-        realKey = System.IO.File.ReadAllText(key);
-        realKey = realKey.Substring(44, realKey.Length - 44 - 44).Replace("\n", "");
+        if (!File.Exists(key))
+        {
+            Console.WriteLine("The key file does not exist");
+            return;
+        }
+        var keyLines = File.ReadAllLines(key);
+
+        // 检测头部和尾部
+        if (keyLines.First() != "------------------- Key --------------------" ||
+            keyLines.Last() != "------------------- End --------------------")
+        {
+            Console.WriteLine("The key file is invalid");
+            return;
+        }
+
+        var realKeyLists = keyLines.Skip(1).Take(keyLines.Count() - 2).ToList();
+        if (realKeyLists == null || !realKeyLists.Any())
+        {
+            Console.WriteLine("The key file is invalid(no data)");
+            return;
+        }
+        realKey = string.Join("", realKeyLists).Replace("\n", "");
         Console.WriteLine($"Use a custom key file: {key}");
     }
 
-    var encryptedText = coreInstance.encrypt(text, key, realOffset);
+    var encryptedText = coreInstance.encrypt(context, realKey, realOffset);
     if (save == "__Letscrypto_console__")
     {
         Console.WriteLine($"Encrypted text: {encryptedText}");
     }
     else
     {
-        System.IO.File.WriteAllText(save, encryptedText);
+        File.WriteAllText(save, encryptedText);
     }
 }
 
-void encryptFile(string file, string key, string offset, string save)
+void decrypt(string text, string file, string key, int offset, string save)
 {
-    var text = System.IO.File.ReadAllText(file);
-    encryptText(text, key, offset, save);
-}
+    var context = "";
 
-void decryptText(string text, string key, int offset, string save)
-{
+    if (text != "__Letscrypto_null__")
+    {
+        if (file == "__Letscrypto_null__")
+        {
+            context = text;
+        }
+        else
+        {
+            Console.WriteLine("Please provide a text or a file to encrypt");
+            return;
+        }
+    }
+    else
+    {
+        if (file != "__Letscrypto_null__")
+        {
+            if (!File.Exists(file))
+            {
+                Console.WriteLine("The file does not exist");
+                return;
+            }
+            context = File.ReadAllText(file);
+        }
+        else
+        {
+            Console.WriteLine("Please provide a text or a file to encrypt");
+            return;
+        }
+    }
+
     var realKey = "";
 
-    realKey = System.IO.File.ReadAllText(key);
-    realKey = realKey.Substring(44, realKey.Length - 44 - 44).Replace("\n", "");
+    if (!File.Exists(key))
+    {
+        Console.WriteLine("The key file does not exist");
+        return;
+    }
+    var keyLines = File.ReadAllLines(key);
+
+    // 检测头部和尾部
+    if (keyLines.First() != "------------------- Key --------------------" ||
+        keyLines.Last() != "------------------- End --------------------")
+    {
+        Console.WriteLine("The key file is invalid");
+        return;
+    }
+
+    var realKeyLists = keyLines.Skip(1).Take(keyLines.Count() - 2).ToList();
+    if (realKeyLists == null || !realKeyLists.Any())
+    {
+        Console.WriteLine("The key file is invalid(no data)");
+        return;
+    }
+    realKey = string.Join("", realKeyLists).Replace("\n", "");
     Console.WriteLine($"Use a custom key file: {key}");
 
-    var encryptedText = coreInstance.decrypt(text, key, offset);
+    var encryptedText = coreInstance.decrypt(context, realKey, offset);
     if (save == "__Letscrypto_console__")
     {
         Console.WriteLine($"Decrypted text: {encryptedText}");
     }
     else
     {
-        System.IO.File.WriteAllText(save, encryptedText);
+        File.WriteAllText(save, encryptedText);
     }
-}
-
-void decryptFile(string file, string key, int offset, string save)
-{
-    var text = System.IO.File.ReadAllText(file);
-    decryptText(text, key, offset, save);
 }
 
 var generateKeyCountOption = new Option<int>(
@@ -121,19 +213,20 @@ var encryptOffsetOption = new Option<string>(
     description: "The offset to encrypt the text",
     getDefaultValue: () => "__Letscrypto_random__"
 );
-var encryptTextArgument = new Argument<string>("text", description: "The text to encrypt");
-var encryptTextCommand = new Command("encryptText", description: "encrypt a text")
+var encryptTextOption = new Option<string>(
+        aliases: new string[] { "--text", "-t" },
+        description: "The text to encrypt",
+        getDefaultValue: () => "__Letscrypto_null__"
+    );
+var encryptFileOption = new Option<string>(
+    aliases: new string[] { "--file", "-f" },
+    description: "The file to encrypt",
+    getDefaultValue: () => "__Letscrypto_null__"
+);
+var encryptCommand = new Command("encrypt", description: "encrypt a text or a file")
 {
-    encryptTextArgument,
-    encryptKeyFileOption,
-    encryptOffsetOption,
-    encryptOutputSaveOption,
-};
-
-var encryptFileArgument = new Argument<string>("file", description: "The file to encrypt");
-var encryptFileCommand = new Command("encryptFile", description: "encrypt a file")
-{
-    encryptFileArgument,
+    encryptTextOption,
+    encryptFileOption,
     encryptKeyFileOption,
     encryptOffsetOption,
     encryptOutputSaveOption,
@@ -146,26 +239,26 @@ var decryptOutputSaveOption = new Option<string>(
 );
 var decryptKeyFileOption = new Option<string>(
     aliases: new string[] { "--key", "-k" },
-    description: "The key to encrypt the text",
-    getDefaultValue: () => "__Letscrypto_default__"
+    description: "The key to encrypt the text"
 );
 var decryptOffsetOption = new Option<int>(
     aliases: new string[] { "--offset", "-o" },
     description: "The offset to encrypt the text"
 );
-var decryptTextArgument = new Argument<string>("text", description: "The text to decrypt");
-var decryptTextCommand = new Command("decryptText", description: "decrypt a text")
+var decryptTextOption = new Option<string>(
+        aliases: new string[] { "--text", "-t" },
+        description: "The text to decrypt",
+        getDefaultValue: () => "__Letscrypto_null__"
+    );
+var decryptFileOption = new Option<string>(
+    aliases: new string[] { "--file", "-f" },
+    description: "The file to decrypt",
+    getDefaultValue: () => "__Letscrypto_null__"
+);
+var decryptCommand = new Command("decrypt", description: "decrypt a text or a file")
 {
-    decryptTextArgument,
-    decryptKeyFileOption,
-    decryptOffsetOption,
-    decryptOutputSaveOption,
-};
-
-var decryptFileArgument = new Argument<string>("file", description: "The file to decrypt");
-var decryptFileCommand = new Command("decryptFile", description: "decrypt a file")
-{
-    decryptFileArgument,
+    decryptTextOption,
+    decryptFileOption,
     decryptKeyFileOption,
     decryptOffsetOption,
     decryptOutputSaveOption,
@@ -173,40 +266,24 @@ var decryptFileCommand = new Command("decryptFile", description: "decrypt a file
 
 var rootCommand = new RootCommand("Let's encrypt together!");
 rootCommand.AddCommand(generateKeyCommand);
-rootCommand.AddCommand(encryptTextCommand);
-rootCommand.AddCommand(encryptFileCommand);
-rootCommand.AddCommand(decryptTextCommand);
-rootCommand.AddCommand(decryptFileCommand);
+rootCommand.AddCommand(encryptCommand);
+rootCommand.AddCommand(decryptCommand);
 
 generateKeyCommand.SetHandler(generateKey, generateKeyCountOption, generateKeySaveOption);
 
-encryptTextCommand.SetHandler(
-    encryptText,
-    encryptTextArgument,
+encryptCommand.SetHandler(
+    encrypt,
+    encryptTextOption,
+    encryptFileOption,
     encryptKeyFileOption,
     encryptOffsetOption,
     encryptOutputSaveOption
 );
 
-encryptFileCommand.SetHandler(
-    encryptFile,
-    encryptFileArgument,
-    encryptKeyFileOption,
-    encryptOffsetOption,
-    encryptOutputSaveOption
-);
-
-decryptTextCommand.SetHandler(
-    decryptText,
-    decryptTextArgument,
-    decryptKeyFileOption,
-    decryptOffsetOption,
-    decryptOutputSaveOption
-);
-
-decryptFileCommand.SetHandler(
-    decryptFile,
-    decryptFileArgument,
+decryptCommand.SetHandler(
+    decrypt,
+    decryptTextOption,
+    decryptFileOption,
     decryptKeyFileOption,
     decryptOffsetOption,
     decryptOutputSaveOption
