@@ -27,6 +27,20 @@ namespace core
             return res;
         }
 
+        public string formatKey(string key)
+        {
+            var res = "";
+
+            res += "------------------- Key --------------------\n";
+            for (int i = 0; i < key.Length; i += 44)
+            {
+                res += key.Substring(i, Math.Min(44, key.Length - i)) + "\n";
+            }
+            res += "------------------- End --------------------";
+
+            return res;
+        }
+
         public int randomOffset(int min = 3, int max = 20)
         {
             return new Random().Next(min, max);
