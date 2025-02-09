@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\letscrypto-cli-all\letscrypto-cli-all.csproj" />
+    <ProjectReference Include="..\letscrypto-core-all\letscrypto-core-all.csproj" />
   </ItemGroup>
 
 </Project>
