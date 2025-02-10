@@ -32,7 +32,13 @@ namespace letscrypto_gui_windows
 
         private void randomOffset_Click(object sender, EventArgs e)
         {
-            uoffset.Text = coreInstance.randomOffset().ToString();
+            if (!int.TryParse(randomOffsetMin.Text, out int min) || !int.TryParse(randomOffsetMax.Text, out int max))
+            {
+                MessageBox.Show("请输入有效的整数！", "错误");
+                return;
+            }
+
+            uoffset.Text = coreInstance.randomOffset(min, max).ToString();
         }
 
         private void generateKey_Click(object sender, EventArgs e)
