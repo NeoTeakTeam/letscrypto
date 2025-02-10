@@ -9,8 +9,19 @@ namespace letscrypto_gui_windows
             "Let's decrypt together",
         };
 
+        public string[] subtitleMoreItems =
+        {
+            "Are you just for fun?",
+            "Please stop!",
+            "I'm tired",
+            "I'm tired too",
+            "I'm tired three",
+            "Okay, you win",
+        };
+
         private Core coreInstance = new();
         private int subtitleCount = 0;
+        private int subtitleMoreCount = 0;
 
 
         public Main()
@@ -87,7 +98,7 @@ namespace letscrypto_gui_windows
             if (file.ShowDialog() == DialogResult.OK)
             {
                 string selectedFilePath = file.FileName;
-                File.WriteAllText(selectedFilePath, resultTip.Text);
+                File.WriteAllText(selectedFilePath, result.Text);
             }
         }
 
@@ -192,7 +203,11 @@ namespace letscrypto_gui_windows
             if (subtitleCount >= 10)
             {
                 subtitleCount = 0;
-                subtitle.Text = "Are you just for fun?";
+                if (subtitleMoreCount != subtitleMoreItems.Length)
+                {
+                    subtitle.Text = subtitleMoreItems[subtitleMoreCount];
+                    subtitleMoreCount += 1;
+                }
             }
             else
                 subtitle.Text = subtitleItems[subtitleCount % subtitleItems.Length];

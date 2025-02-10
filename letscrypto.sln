@@ -13,6 +13,7 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		Description = Let's encrypt together
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{4420801C-E573-4CCB-9AFB-CD3203646EED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
